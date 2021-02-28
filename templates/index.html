@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <script src="../static/js/index.js"></script> -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css?family=Archivo+Black&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Archivo:700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="../static/css/style.css">
+    <title>Website Vulnerability Scanner</title>
+</head>
+<body>
+    <div class="container">
+        <input class="c-checkbox" type="checkbox" id="checkbox">
+        <div class="c-formContainer" id="form-container">
+            <form class="c-form" action="">
+                <input class="c-form__input" placeholder="Enter URL" type="url" id="web-url" name="web-url" required>
+                <label class="c-form__buttonLabel" id="btn-sbmt" for="checkbox">
+                <button class="c-form__button" type="button">Scan</button>
+                </label>
+                <label class="c-form__toggle" for="checkbox" data-title="Scan Now!!!"></label>
+            </form>
+        </div>
+        <div class="card" style="display: none;">
+            <p>
+              Here's a joke for you.
+            </p>
+            <h2 class="joke">
+            </h2>
+            <p>
+                Click to get more
+            </p>
+        </div>
+        <div class="results" style="display: none;">
+            <h1>Results</h1>
+            <div class="crawl-result" >
+                <table class="crawl-table result-table">
+                    <thead>
+                        <tr>
+                            <th colspan="3">Links</th>
+                        </tr>
+                        <tr>
+                            <th><h1>Method</h1></th>
+                            <th><h1>URL</h1></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <div class="injectability-result" >
+                <table class="injectability-table result-table">
+                    <thead>
+                        <tr>
+                            <th colspan="3">Injectable Links</th>
+                        </tr>
+                        <tr>
+                            <th><h1>URL</h1></th>
+                            <th><h1>Parameters</h1></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+   
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script>
+        function loadJoke() {
+                const settings = {
+                    "async": true,
+                    "crossDomain": true,
+                    "url": "https://geek-jokes.p.rapidapi.com/api?format=json",
+                    "method": "GET",
+                    "headers": {
+                        "x-rapidapi-key": "3cec739dccmshecccceb52bd8f94p15acafjsnf95c417a8eb0",
+                        "x-rapidapi-host": "geek-jokes.p.rapidapi.com"
+                    }
+                };
+
+                $.ajax(settings).done(function (response) {
+                    $('.card h2').text(response['joke'])
+                });
+        }
+
+        $(function() {
+            $('#btn-sbmt').on('click', function() {
+                webURL = $("#web-url").val();
+                loadJoke();
+                $(".card").css("display", "block");
+                $.ajax({
+                    url: "/",
+                    type: "POST",
+                    data: {'web-url': webURL},
+                    success: function(data) {
+                        $("#form-container").css("display", "none");
+                        $('.card').css('display', 'none');
+                        $(".results").css("display", "block");
+                        $.each(data, function(key, value) {
+                            if(key === "links"){
+                                $.each(value, function(index, link) {
+                                    $('.crawl-table tr:last').after('<tr><td>GET</td><td>' + link +'</td></tr>');
+                                })
+                            } else {
+                                parameters = value.join(", ")
+                                $('.injectability-table tr:last').after('<tr><td>' + key + '</td><td>' + parameters +'</td></tr>');
+                            }
+                        })
+                    }
+                });
+            })
+            
+            $('.card').on('click', function(){
+                loadJoke()
+            });
+        });
+    </script>
+</body>
+</html>
